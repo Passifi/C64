@@ -1,0 +1,37 @@
+<C64debugger version="1.0">
+   <Sources values="INDEX,FILE">
+      0,KickAss.jar:/include/autoinclude.asm
+      1,C:\Code\C64\constants.asm
+      2,C:\Code\C64\main.asm
+   </Sources>
+
+   <Segment name="Default" dest="" values="START,END,FILE_IDX,LINE1,COL1,LINE2,COL2">
+      <Block name="Unnamed">
+         $0801,$080d,2,4,5,4,9
+         $080e,$0810,2,7,3,7,5
+         $0811,$0813,2,8,3,8,5
+         $0814,$0816,2,9,3,9,5
+         $0817,$0818,2,10,3,10,5
+         $0819,$081a,2,11,3,11,5
+         $081b,$081d,2,12,3,12,5
+         $081e,$081f,2,13,3,13,5
+         $0820,$0822,2,14,3,14,5
+         $0823,$0825,2,15,3,15,5
+         $0826,$0826,2,18,3,18,7
+      </Block>
+   </Segment>
+
+   <Labels values="SEGMENT,ADDRESS,NAME,START,END,FILE_IDX,LINE1,COL1,LINE2,COL2">
+      Default,$d020,frame_clr,1,1,8,1,16
+      Default,$d021,bg_clr,1,2,8,2,13
+      Default,$080e,main,2,6,1,6,5
+      Default,$0826,Counter,2,17,1,17,8
+   </Labels>
+
+   <Breakpoints values="SEGMENT,ADDRESS,ARGUMENT">
+   </Breakpoints>
+
+   <Watchpoints values="SEGMENT,ADDRESS1,ADDRESS2,ARGUMENT">
+   </Watchpoints>
+
+</C64debugger>

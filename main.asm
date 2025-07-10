@@ -24,11 +24,11 @@
      
     
 !loop:
-    lda Timer+1 
-    cmp #1 
+    lda Timer
+    cmp #30
     bne !loop- 
     lda #0 
-    sta Timer+1 
+    sta Timer 
     inc Sprite1XLow
     jmp !loop-
 
@@ -87,6 +87,16 @@ msg:
 .text "hello from myself, and jesus"        
 msgEnd:
 *=$3200
+.byte $00,$00,$00,$00,$00,$00,$00,$00
+.byte $00,$00,$00,$00,$00,$00,$00,$00
+.byte $28,$00,$0f,$ff,$fc,$0f,$ff,$fc
+.byte $fa,$aa,$a0,$39,$59,$58,$39,$d9
+.byte $78,$f9,$f9,$f8,$ca,$aa,$a8,$0a
+.byte $aa,$a8,$0a,$aa,$a8,$02,$aa,$a0
+.byte $02,$95,$a0,$00,$aa,$80,$00,$00
+.byte $00,$00,$00,$00,$00,$00,$00,$87
+
+
 .byte $00,$ff,$c0,$00,$ea,$b0,$03,$ea
 .byte $b0,$0f,$aa,$b0,$0e,$aa,$b0,$3f
 .byte $6d,$bc,$3b,$6d,$ac,$3b,$ad,$ac

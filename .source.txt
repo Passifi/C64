@@ -3,7 +3,9 @@
 .import source "graphics.asm"
 .import source "input.asm"
 .import source "strings.asm"
-
+.function calcSpritePtr(address) {
+    .return (address/64)
+}
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     jsr clearScreen 
@@ -15,9 +17,10 @@
     lda  #($3200/64)
     sta spritePtr1 
     .for(var x = 1; x < 8; x++) {
-        setSpritePtr(x,$3200/64)
-        setSprite(x,random()*270+50,random()*170+30)
+        setSpritePtr(x,calcSpritePtr(Sprite1))
+        setSprite(x,random()*200+50,random()*40+100)
         setSpriteMultiColor(x)
+        setSpriteColor(x,x)
     }
 
     lda #120
@@ -105,6 +108,7 @@ SpriteTableEnd:
 
 
 *=$3200
+Sprite1:
 .byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $28,$00,$0f,$ff,$fc,$0f,$ff,$fc

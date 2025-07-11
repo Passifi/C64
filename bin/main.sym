@@ -1,18 +1,18 @@
-.label msg=$8d0
+.label msg=$a2a
 .label Bitmapmode=$20
 .label SIDVoice1High=$d401
 .label DutyCycleLow=$d402
 .label screenClrOffset=$fa
-.label nmi=$8a4 {
+.label nmi=$9fe {
 }
-.label PlayerXAccu=$8cb
+.label PlayerXAccu=$a25
 .label ExtColor=$40
 .label clearScreen=$2000
 .label SIDFilterVol=$d418
-.label PlayerPosX=$8cd
-.label PlayerPosY=$8cf
-.label PlayerYAccu=$8cc
-.label msgEnd=$8ec
+.label PlayerPosX=$a27
+.label PlayerPosY=$a29
+.label PlayerYAccu=$a26
+.label msgEnd=$a46
 .label JoyLeft=$4
 .label spritePtr3=$7fa
 .label ADVoice1=$d405
@@ -30,7 +30,7 @@
 .label spritePtr8=$7ff
 .label SpriteClr4=$d02a
 .label spritePtr5=$7fc
-.label SetupIRQ=$8a1
+.label SetupIRQ=$9fb
 .label SpriteClr5=$d02b
 .label spritePtr6=$7fd
 .label Sprite1Y=$d001
@@ -63,9 +63,10 @@
 }
 .label clr_ram=$d800
 .label JoyRight=$8
+.label SpriteTableEnd=$a66
 .label color_ram=$d800
 .label SpriteActiveReg=$d015
-.label setupNMI=$879
+.label setupNMI=$9d3
 .label JOY1=$dc00
 .label DutyCycleHigh=$d403
 .label SpriteResReg=$d01c
@@ -76,8 +77,17 @@
 .label SIDVoice1Low=$d400
 .namespace VIC {
   .label Sprite3Color=$d029
+  .label spritePtr3=$7fa
   .label MulticolorCtrl=$d01c
+  .label spritePtr4=$7fb
+  .label spritePtr1=$7f8
+  .label spritePtr2=$7f9
+  .label SpriteXHighbit=$d010
+  .label spritePtr7=$7fe
+  .label spritePtr8=$7ff
   .label Sprite6Color=$d02c
+  .label spritePtr5=$7fc
+  .label spritePtr6=$7fd
   .label Sprite1XLow=$d000
   .label Sprite1Y=$d001
   .label Sprite5Color=$d02b
@@ -91,5 +101,6 @@
   .label ActiveSpriteRegister=$d015
   .label Sprite4Color=$d02a
 }
-.label Timer=$8c9
+.label Timer=$a23
+.label SpriteTable=$a46
 .label Ctrl1Reg=$d011

@@ -33,11 +33,20 @@
      .label Sprite7Color = $d02D
      .label Sprite8Color = $d02E 
      .label MulticolorCtrl = $d01c
-}
+     .label SpriteXHighbit = $d010
+     .label spritePtr1 = 2040
+     .label spritePtr2 = 2041
+     .label spritePtr3 = 2042
+     .label spritePtr4 = 2043
+     .label spritePtr5 = 2044
+     .label spritePtr6 = 2045
+     .label spritePtr7 = 2046
+     .label spritePtr8 = 2047
+     }
 
-.label color_ram = $d800
+     .label color_ram = $d800
 
-clearScreen:
+     clearScreen:
      ldx #screenClrOffset
      lda #petscii.blank
 !loop:
@@ -89,4 +98,38 @@ clearScreen:
      }
 }
 
- 
+.macro setSpritePtr(no, ptr) {
+    lda #ptr
+    sta spritePtr1+no
+}
+
+.macro setSprite(no, x,y ) {
+    lda #<x 
+    sta VIC.Sprite1XLow+no*2 
+    lda #>x
+    cmp #0 
+    bcc !setHighBitLow+
+    lda VIC.SpriteXHighbit 
+    ora #(1<<no)
+    sta VIC.SpriteXHighbit
+    jmp !setYPos+  
+!setHighBitLow:
+    lda VIC.SpriteXHighbit 
+    and #~(1<<no)
+    sta VIC.SpriteXHighbit
+!setYPos:
+    lda #y
+    sta VIC.Sprite1Y+no*2 
+}
+
+.macro moveSprite(no,x,y) {
+
+}
+
+.struct Point {x,y}
+
+.struct Sprite {
+     x,
+     y,
+     ptr
+}

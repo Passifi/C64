@@ -14,14 +14,19 @@
     sta SpriteActiveReg 
     lda  #($3200/64)
     sta spritePtr1 
+    .for(var x = 1; x < 8; x++) {
+        setSpritePtr(x,$3200/64)
+        setSprite(x,random()*270+50,random()*170+30)
+        setSpriteMultiColor(x)
+    }
+
     lda #120
     sta Sprite1XLow 
     sta Sprite1Y
-    setSpriteColor(0,colors.orange)
     setSpriteMultiColor(0)
+    setSpriteColor(0,colors.orange)
     setSpriteAuxiliaryColor(0,colors.white)
     setSpriteAuxiliaryColor(1,colors.black)
-     
     
 !loop:
     lda Timer
@@ -30,6 +35,10 @@
     lda #0 
     sta Timer 
     inc Sprite1XLow
+    bne !loop- 
+    lda VIC.SpriteXHighbit 
+    eor #$1
+    sta VIC.SpriteXHighbit  
     jmp !loop-
 
 setupNMI:
@@ -72,7 +81,6 @@ nmi:
     PullRegisters()
     rti
 
-
 Timer:
     .word 00
 PlayerXAccu:
@@ -86,6 +94,16 @@ PlayerPosY:
 msg:
 .text "hello from myself, and jesus"        
 msgEnd:
+
+SpriteTable:
+    .for(var x = 0; x < 8; x++) {
+        .word $ff33
+        .byte $ff
+        .byte $ff
+    }
+SpriteTableEnd:
+
+
 *=$3200
 .byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$00
@@ -95,7 +113,6 @@ msgEnd:
 .byte $aa,$a8,$0a,$aa,$a8,$02,$aa,$a0
 .byte $02,$95,$a0,$00,$aa,$80,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$87
-
 
 .byte $00,$ff,$c0,$00,$ea,$b0,$03,$ea
 .byte $b0,$0f,$aa,$b0,$0e,$aa,$b0,$3f

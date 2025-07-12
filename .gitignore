@@ -2,4 +2,4 @@
 *.prg
 *.sym
 *.vs
-.\bin\*
+bin/

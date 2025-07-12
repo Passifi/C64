@@ -6,6 +6,10 @@
 .function calcSpritePtr(address) {
     .return (address/64)
 }
+.enum  {
+   LEFT,RIGHT,UP,DOWN 
+}
+.label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     jsr clearScreen 
@@ -18,9 +22,11 @@
     sta spritePtr1 
     .for(var x = 1; x < 8; x++) {
         setSpritePtr(x,calcSpritePtr(Sprite1))
-        setSprite(x,random()*200+50,random()*40+100)
+        setValue(Sprite0AccuX+x*5,$30+x*10)
+        setValue(Sprite0AccuY+x*5,$30+x*20)
         setSpriteMultiColor(x)
         setSpriteColor(x,x)
+        setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
     }
 
     lda #120
@@ -32,16 +38,17 @@
     setSpriteAuxiliaryColor(1,colors.black)
     
 !loop:
-    lda Timer
-    cmp #30
-    bne !loop- 
-    lda #0 
-    sta Timer 
-    inc Sprite1XLow
-    bne !loop- 
-    lda VIC.SpriteXHighbit 
-    eor #$1
-    sta VIC.SpriteXHighbit  
+    // lda PlayerXAccu 
+    // sta VIC.Sprite1XLow  
+    // lda PlayerYAccu
+    // sta VIC.Sprite1Y
+    .for(var i = 0; i < 8; i++) {
+        setSpriteViaAddress(i,Sprite0AccuX+i*5,Sprite0AccuY+i*5)
+
+    }
+    //     //lda VIC.SpriteXHighbit 
+    //eor #$1
+    //sta VIC.SpriteXHighbit  
     jmp !loop-
 
 setupNMI:
@@ -66,13 +73,19 @@ SetupIRQ:
     cli
     sei 
     rts 
-
+moveSprite:
+    moveObject(PlayerXAccu,RIGHT,stepSize)
+   .for(var i =0; i < 7; i++)
+   { 
+   moveObject(Sprite1AccuX+i*5,RIGHT, 10+i*12)
+   }
+    rts
 nmi:
     PushRegister()
     lda $dd0d // confirm IRQ
     and #1 
     beq !exit+ 
-    inc bg_clr
+    jsr moveSprite
     lda Timer 
     clc 
     adc #1 
@@ -84,16 +97,62 @@ nmi:
     PullRegisters()
     rti
 
+.macro setValue(address,value) {
+    lda #value 
+    sta address
+} 
+
 Timer:
     .word 00
 PlayerXAccu:
+    .word 0
     .byte 0
 PlayerYAccu:
-    .byte 0
+    .word 0
 PlayerPosX:
     .word 00
 PlayerPosY:
     .byte 00
+Sprite0AccuX:
+        .word 0
+        .byte 0
+Sprite0AccuY:
+        .word 0
+Sprite1AccuX:
+        .word 0
+        .byte 0
+Sprite1AccuY:
+        .word 0
+Sprite2AccuX:
+        .word 0
+        .byte 0
+Sprite2AccuY:
+        .word 0
+Sprite3AccuX:
+        .word 0
+        .byte 0
+Sprite3AccuY:
+        .word 0
+Sprite4AccuX:
+        .word 0
+        .byte 0
+Sprite4AccuY:
+        .word 0
+Sprite5AccuX:
+        .word 0
+        .byte 0
+Sprite5AccuY:
+        .word 0
+Sprite6AccuX:
+        .word 0
+        .byte 0
+Sprite6AccuY:
+        .word 0
+Sprite7AccuX:
+        .word 0
+        .byte 0
+Sprite7AccuY:
+        .word 0
 msg:
 .text "hello from myself, and jesus"        
 msgEnd:
@@ -105,7 +164,50 @@ SpriteTable:
         .byte $ff
     }
 SpriteTableEnd:
-
+.macro addWord(address,value) {
+    clc 
+    lda address+1 
+    adc #value 
+    sta address+1
+    lda address 
+    adc #0 
+    sta address
+}
+.macro addLong(address,value) {
+   clc 
+   lda address+2
+    adc #value 
+    sta address+2 
+    lda address+1 
+    adc #0
+    sta address+1 
+    lda address
+    adc #0
+    sta address
+}
+.macro subWord(address,value) {
+    sec 
+    lda address+1 
+    sbc #value 
+    sta address+1
+    lda address 
+    sbc #0
+    sta address 
+}
+.macro moveObject(address,x,value) {
+    .if( x == RIGHT) {
+        addLong(address,value)
+    } 
+    .if(x == LEFT) {
+        addWord(address,value)
+    }
+    .if(x == UP) {
+        subWord(address+2,value)
+    }
+    .if(x == DOWN) {
+        addWord(address+2,value)
+    }
+}
 
 *=$3200
 Sprite1:

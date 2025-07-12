@@ -122,6 +122,23 @@
     sta VIC.Sprite1Y+no*2 
 }
 
+.macro setSpriteViaAddress(no,xPtr, yPtr) {
+     lda xPtr+1 
+     sta VIC.Sprite1XLow+no*2
+     lda xPtr
+     and #$1 
+     .for(var x = 0; x < no;x++) {
+          asl 
+     }  
+     sta zeropage
+     lda VIC.SpriteXHighbit
+     eor zeropage
+     sta VIC.SpriteXHighbit
+!continue:
+     lda yPtr 
+     sta VIC.Sprite1Y+no*2
+}
+
 .macro moveSprite(no,x,y) {
 
 }

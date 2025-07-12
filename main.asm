@@ -12,6 +12,11 @@
 .label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
+    
+    nop 
+    nop
+    nop 
+    setupRasterIRQ(customIRQ)
     jsr clearScreen 
     setCursorPosition(520)
     stringCopyAt(msg,(msgEnd-msg)) 
@@ -38,19 +43,26 @@
     setSpriteAuxiliaryColor(1,colors.black)
     
 !loop:
-    // lda PlayerXAccu 
-    // sta VIC.Sprite1XLow  
-    // lda PlayerYAccu
-    // sta VIC.Sprite1Y
+    jmp !loop-
+
+customIRQ:
+    
+    lda VIC.IRQStatus 
+    sta VIC.IRQStatus
+    lda VIC.RasterlineInterrupt 
+    cmp #250 
+    bne !end+ 
+    jsr moveSprite
+    jsr setSprites
+!end:
+    jmp $ea31
+     
+setSprites:
     .for(var i = 0; i < 8; i++) {
         setSpriteViaAddress(i,Sprite0AccuX+i*5,Sprite0AccuY+i*5)
 
     }
-    //     //lda VIC.SpriteXHighbit 
-    //eor #$1
-    //sta VIC.SpriteXHighbit  
-    jmp !loop-
-
+    rts 
 setupNMI:
     ldx $dd0d // CIA-2
     lda #%01111111 // deactivate all interrupts 
@@ -69,30 +81,17 @@ setupNMI:
     ora #%10000001
     sta $dd0d 
     rts 
-SetupIRQ:
-    cli
-    sei 
-    rts 
 moveSprite:
     moveObject(PlayerXAccu,RIGHT,stepSize)
    .for(var i =0; i < 7; i++)
    { 
-   moveObject(Sprite1AccuX+i*5,RIGHT, 10+i*12)
+   moveObject(Sprite1AccuX+i*5,RIGHT, 220+i*2)
    }
     rts
 nmi:
     PushRegister()
     lda $dd0d // confirm IRQ
-    and #1 
-    beq !exit+ 
-    jsr moveSprite
-    lda Timer 
-    clc 
-    adc #1 
-    sta Timer 
-    lda #0 
-    adc #0 
-    sta Timer+1 
+    sta $dd0d
 !exit:
     PullRegisters()
     rti
@@ -174,8 +173,8 @@ SpriteTableEnd:
     sta address
 }
 .macro addLong(address,value) {
-   clc 
-   lda address+2
+    clc 
+    lda address+2
     adc #value 
     sta address+2 
     lda address+1 
@@ -197,6 +196,15 @@ SpriteTableEnd:
 .macro moveObject(address,x,value) {
     .if( x == RIGHT) {
         addLong(address,value)
+        lda address 
+        cmp #0
+        beq !end+
+        lda address+1
+        cmp #60
+        bcc !end+
+        lda #0
+        sta address
+        sta address+1
     } 
     .if(x == LEFT) {
         addWord(address,value)
@@ -207,6 +215,7 @@ SpriteTableEnd:
     .if(x == DOWN) {
         addWord(address+2,value)
     }
+!end:
 }
 
 *=$3200

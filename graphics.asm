@@ -23,7 +23,9 @@
      .label Sprite1Y = $d001
      .label ActiveSpriteRegister = $d015
      .label CtrlReg1 = $d011
+     .label RasterlineInterrupt = $d012
      .label CtrlReg2 = $d016 
+     .label IRQStatus = $d019 
      .label SpriteAuxiliaryColor1 = $d025
      .label SpriteAuxiliaryColor2 = $d026 
      .label Sprite1Color = $d027 
@@ -47,6 +49,7 @@
      }
 
 .namespace VICCtrl1 {
+     .label Bit9RasterIRQ = 128
      .label ExtColorMode = 64
      .label Bitmapmode = 32 
      .label ShowScreen = 16
@@ -144,13 +147,15 @@
      lda xPtr+1 
      sta VIC.Sprite1XLow+no*2
      lda xPtr
-     and #$1 
-     .for(var x = 0; x < no;x++) {
-          asl 
-     }  
-     sta zeropage
+     cmp #0
+     beq !setHighZero+
      lda VIC.SpriteXHighbit
-     eor zeropage
+     ora #(1<<no)
+     sta VIC.SpriteXHighbit
+     jmp !continue+
+!setHighZero:
+     lda VIC.SpriteXHighbit
+     and #(~(1<<no)) 
      sta VIC.SpriteXHighbit
 !continue:
      lda yPtr 
@@ -165,10 +170,28 @@
      }
      else {
           lda VIC.CtrlReg1 
-          and #(~VICCtrl1.Bitmapmode)
+          and #(~(VICCtrl1.Bitmapmode))
           sta VIC.CtrlReg1 
      }
 }
+
+.macro setupRasterIRQ(customIrqAddress) {
+     sei 
+     lda #<customIrqAddress
+     sta StockIRQVector 
+     lda #>customIrqAddress
+     sta StockIRQVector+1 
+     lda #250
+     sta VIC.RasterlineInterrupt 
+     lda VIC.CtrlReg1
+     and #(~VICCtrl1.Bit9RasterIRQ)
+     sta  VIC.CtrlReg1
+     lda $d01a //actiavte VIC remember to name this one 
+     ora #%1 
+     sta $d01a 
+     cli 
+}
+
 
 .macro moveSprite(no,x,y) {
 

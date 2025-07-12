@@ -41,4 +41,5 @@
 .label ADVoice1 = $d405
 .label SRVoice1 = $d406 
 .label SIDFilterVol = $d418
-
+.label StockIRQVector = $0314
+.label KernalIRQRoutine = $EA31

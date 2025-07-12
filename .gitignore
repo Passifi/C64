@@ -3,3 +3,4 @@
 *.sym
 *.vs
 bin/
+.source.txt

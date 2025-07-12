@@ -22,6 +22,8 @@
      .label Sprite1XLow = $d000
      .label Sprite1Y = $d001
      .label ActiveSpriteRegister = $d015
+     .label CtrlReg1 = $d011
+     .label CtrlReg2 = $d016 
      .label SpriteAuxiliaryColor1 = $d025
      .label SpriteAuxiliaryColor2 = $d026 
      .label Sprite1Color = $d027 
@@ -43,6 +45,22 @@
      .label spritePtr7 = 2046
      .label spritePtr8 = 2047
      }
+
+.namespace VICCtrl1 {
+     .label ExtColorMode = 64
+     .label Bitmapmode = 32 
+     .label ShowScreen = 16
+     .label LineMode24_25 = 8  
+}
+
+.namespace VICCtrl2 {
+     .label MultiColor = 16
+     .label PixelOffsetBit2 = 4 
+     .label PixelOffsetBit1 = 2 
+     .label PixelOffsetBit0 = 1 
+}
+
+
 
      .label color_ram = $d800
 
@@ -137,6 +155,19 @@
 !continue:
      lda yPtr 
      sta VIC.Sprite1Y+no*2
+}
+
+.macro toggleBitmap(value) {
+     .if(value) { 
+     lda VIC.CtrlReg1
+     ora #VICCtrl1.Bitmapmode
+     sta VIC.CtrlReg1 
+     }
+     else {
+          lda VIC.CtrlReg1 
+          and #(~VICCtrl1.Bitmapmode)
+          sta VIC.CtrlReg1 
+     }
 }
 
 .macro moveSprite(no,x,y) {

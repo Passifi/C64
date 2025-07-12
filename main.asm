@@ -28,7 +28,7 @@
         setSpriteColor(x,x)
         setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
     }
-
+    toggleBitmap(true)
     lda #120
     sta Sprite1XLow 
     sta Sprite1Y

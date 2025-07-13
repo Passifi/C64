@@ -12,6 +12,9 @@
 .label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
+    sei
+    clearBitmap()
+    cli
     setCharRomPosition(3)
     setupRasterIRQ(customIRQ)
     jsr setupNMI
@@ -28,7 +31,6 @@
         setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
     }
     toggleBitmap(true)
-    clearBitmap()
     lda #120
     sta Sprite1XLow 
     sta Sprite1Y

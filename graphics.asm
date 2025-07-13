@@ -17,6 +17,11 @@
     .label light_blue    = 14
     .label light_grey    = 15
 }
+
+.namespace CIA {
+     .label ctrlOutput = $DD02
+     .label memoryBank = $DD00
+}
 .namespace VIC {
      .label SpriteReg = $d01c
      .label Sprite1XLow = $d000
@@ -25,6 +30,7 @@
      .label CtrlReg1 = $d011
      .label RasterlineInterrupt = $d012
      .label CtrlReg2 = $d016 
+     .label Char_BankCtrl = $d018
      .label IRQStatus = $d019 
      .label SpriteAuxiliaryColor1 = $d025
      .label SpriteAuxiliaryColor2 = $d026 
@@ -63,7 +69,7 @@
      .label PixelOffsetBit0 = 1 
 }
 
-
+     .label bitmapScrBase = $2000
 
      .label color_ram = $d800
 
@@ -84,7 +90,22 @@
      ora #(1<<no) 
      sta VIC.ActiveSpriteRegister
 }
-
+.macro clearBitmap() {
+     lda #<bitmapScrBase
+     sta zeropage
+     lda #>bitmapScrBase
+     sta zeropage+1 
+     ldx #32
+     ldy #0
+     lda #43
+!loop:
+     sta (zeropage),y
+     dey 
+     bne !loop-
+     dex
+     inc zeropage+1 
+     bne !loop-
+}
 .macro setColor(x,y,color) {
      .var result = x + y*40
      lda #color
@@ -121,7 +142,7 @@
 
 .macro setSpritePtr(no, ptr) {
     lda #ptr
-    sta spritePtr1+no
+    sta VIC.spritePtr1+no
 }
 
 .macro setSprite(no, x,y ) {
@@ -190,6 +211,33 @@
      ora #%1 
      sta $d01a 
      cli 
+}
+
+.macro selectVideoBank(bankNo) {
+     .assert "legal Bank", bankNo < 4, true 
+     lda CIA.ctrlOutput
+     ora #3 
+     sta CIA.ctrlOutput
+     lda CIA.memoryBank 
+     and #%11111100 
+     ora #bankNo
+     sta CIA.memoryBank
+
+}
+
+
+.macro selectScreenBank(bankNo) {
+     lda VIC.Char_BankCtrl 
+     and #$0f
+     ora #(1<<bankNo)
+     sta VIC.Char_BankCtrl
+}
+
+.macro setCharRomPosition(bankNo) {
+     lda VIC.Char_BankCtrl
+     and $f0 
+     ora #(1<<bankNo)
+     sta VIC.Char_BankCtrl
 }
 
 

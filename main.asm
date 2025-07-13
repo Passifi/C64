@@ -12,18 +12,12 @@
 .label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
-    
-    nop 
-    nop
-    nop 
+    setCharRomPosition(3)
     setupRasterIRQ(customIRQ)
-    jsr clearScreen 
-    setCursorPosition(520)
-    stringCopyAt(msg,(msgEnd-msg)) 
     jsr setupNMI
     lda #255
     sta SpriteActiveReg 
-    lda  #($3200/64)
+    lda  #(calcSpritePtr(Sprite1))
     sta spritePtr1 
     .for(var x = 1; x < 8; x++) {
         setSpritePtr(x,calcSpritePtr(Sprite1))
@@ -34,6 +28,7 @@
         setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
     }
     toggleBitmap(true)
+    clearBitmap()
     lda #120
     sta Sprite1XLow 
     sta Sprite1Y
@@ -85,7 +80,7 @@ moveSprite:
     moveObject(PlayerXAccu,RIGHT,stepSize)
    .for(var i =0; i < 7; i++)
    { 
-   moveObject(Sprite1AccuX+i*5,RIGHT, 220+i*2)
+    moveObject(Sprite1AccuX+i*5,RIGHT, 220+i*2)
    }
     rts
 nmi:
@@ -229,22 +224,7 @@ Sprite1:
 .byte $02,$95,$a0,$00,$aa,$80,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$87
 
-.byte $00,$ff,$c0,$00,$ea,$b0,$03,$ea
-.byte $b0,$0f,$aa,$b0,$0e,$aa,$b0,$3f
-.byte $6d,$bc,$3b,$6d,$ac,$3b,$ad,$ac
-.byte $3a,$aa,$bc,$3a,$aa,$b0,$3e,$aa
-.byte $b0,$0e,$6a,$c0,$0f,$56,$c0,$0f
-.byte $de,$c0,$0e,$fe,$c0,$0e,$aa,$c0
-.byte $0f,$af,$00,$0f,$ff,$00,$00,$00
-
-
-
-
-.byte $0f,$fc,$00,$38,$06,$00,$20,$03
-.byte $00,$20,$01,$00,$27,$01,$80,$27
-.byte $8e,$80,$37,$9e,$80,$12,$1e,$c0
-.byte $10,$0e,$40,$10,$06,$40,$18,$00
-.byte $40,$08,$40,$40,$0f,$c0,$40,$06
-.byte $c0,$c0,$02,$60,$80,$02,$31,$80
-.byte $02,$3f,$00,$03,$2c,$00,$01,$e0
-.byte $00,$00,$00,$00,$00,$00,$00,$01
+.macro turnOffKernal() {
+    lda #$35
+    sta $1
+}

@@ -77,17 +77,17 @@
 
      .label color_ram = $d800
 
-     clearScreen:
-     ldx #screenClrOffset
-     lda #petscii.blank
-!loop:
-    sta scr_ram,x 
-    sta scr_ram+screenClrOffset,x 
-    sta scr_ram+(screenClrOffset*2),x 
-    sta scr_ram+(screenClrOffset*3),x 
-    dex 
-    bne !loop-
-    rts
+// clearScreen:
+//      ldx #screenClrOffset
+//      lda #petscii.blank
+// !loop:
+//     sta scr_ram,x 
+//     sta scr_ram+screenClrOffset,x 
+//     sta scr_ram+(screenClrOffset*2),x 
+//     sta scr_ram+(screenClrOffset*3),x 
+//     dex 
+//     bne !loop-
+//     rts
 
 .macro activateSprite(no) {
      lda VIC.ActiveSpriteRegister 

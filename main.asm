@@ -4,7 +4,7 @@
 .import source "input.asm"
 .import source "strings.asm"
 .function calcSpritePtr(address) {
-    .return (address/64)
+    .return ((address-videoBankStart)/64)
 }
 .enum  {
    LEFT,RIGHT,UP,DOWN 
@@ -12,12 +12,15 @@
 .label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
-    sei
-    clearBitmap()
-    cli
-    setCharRomPosition(3)
+    selectVideoBank(VideoBankNo)  
+    clearScreen()
     setupRasterIRQ(customIRQ)
-    jsr setupNMI
+    toggleBitmap(true) 
+    toggleBitmapBank(true) 
+    clearBitmap()
+    .for(var i =0; i < 30; i++) {
+        setTile(i,0)
+    }
     lda #255
     sta SpriteActiveReg 
     lda  #(calcSpritePtr(Sprite1))
@@ -30,7 +33,6 @@
         setSpriteColor(x,x)
         setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
     }
-    toggleBitmap(true)
     lda #120
     sta Sprite1XLow 
     sta Sprite1Y
@@ -43,21 +45,19 @@
     jmp !loop-
 
 customIRQ:
-    
-    lda VIC.IRQStatus 
-    sta VIC.IRQStatus
-    lda VIC.RasterlineInterrupt 
-    cmp #250 
-    bne !end+ 
-    jsr moveSprite
-    jsr setSprites
-!end:
+        lda VIC.IRQStatus 
+        sta VIC.IRQStatus
+        lda VIC.RasterlineInterrupt 
+        cmp #250 
+        bne !end+ 
+        jsr moveSprite
+        jsr setSprites
+    !end:
     jmp $ea31
      
 setSprites:
     .for(var i = 0; i < 8; i++) {
         setSpriteViaAddress(i,Sprite0AccuX+i*5,Sprite0AccuY+i*5)
-
     }
     rts 
 setupNMI:
@@ -215,7 +215,17 @@ SpriteTableEnd:
 !end:
 }
 
-*=$3200
+setTileAt:
+    // x,y arethe position
+    clc 
+    lda #<bitmapScrBase
+     
+    sta zeropage 
+    lda #>bitmapScrBase
+    sta zeropage+1
+
+
+*=videoBankStart+$1000
 Sprite1:
 .byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$00
@@ -226,7 +236,10 @@ Sprite1:
 .byte $02,$95,$a0,$00,$aa,$80,$00,$00
 .byte $00,$00,$00,$00,$00,$00,$00,$87
 
+Tiles:
+    .byte $41,$22,$14,$8,$14,$22,$41,$80
 .macro turnOffKernal() {
     lda #$35
     sta $1
 }
+

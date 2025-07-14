@@ -1,4 +1,3 @@
-#define CONSTANS
 .label zeropage = $fb 
 .label scr_ram = $400
 .label bg_clr = $d020

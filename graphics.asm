@@ -1,6 +1,6 @@
 .label screenClrOffset = 250
 .const bankSize = pow(2,14)
-.const VideoBankNo = 2
+.const VideoBankNo = 1
 .const videoBankStart = bankSize*VideoBankNo 
 
 .namespace colors {
@@ -48,7 +48,7 @@
      .label Sprite8Color = $d02E 
      .label MulticolorCtrl = $d01c
      .label SpriteXHighbit = $d010
-     .label spritePtr1 = 2040
+     .label spritePtr1 = videoBankStart+2040
      .label spritePtr2 = 2041
      .label spritePtr3 = 2042
      .label spritePtr4 = 2043
@@ -73,21 +73,22 @@
      .label PixelOffsetBit0 = 1 
 }
 
-     .label bitmapScrBase = $2000
+     .label bitmapScrBase = $6000
 
      .label color_ram = $d800
-
-// clearScreen:
-//      ldx #screenClrOffset
-//      lda #petscii.blank
-// !loop:
-//     sta scr_ram,x 
-//     sta scr_ram+screenClrOffset,x 
-//     sta scr_ram+(screenClrOffset*2),x 
-//     sta scr_ram+(screenClrOffset*3),x 
-//     dex 
-//     bne !loop-
-//     rts
+.macro clearScreen() {
+     sei 
+     ldx #screenClrOffset
+     lda #$ea
+!loop:
+    sta videoBankStart+scr_ram,x 
+    sta videoBankStart+scr_ram+screenClrOffset,x 
+    sta videoBankStart+scr_ram+(screenClrOffset*2),x 
+    sta videoBankStart+scr_ram+(screenClrOffset*3),x 
+    dex 
+    bne !loop-
+    cli
+}
 
 .macro activateSprite(no) {
      lda VIC.ActiveSpriteRegister 
@@ -101,13 +102,13 @@
      sta zeropage+1 
      ldx #32
      ldy #0
-     lda #43
+     tya
 !loop:
      sta (zeropage),y
      dey 
      bne !loop-
+     inc zeropage+1
      dex
-     inc zeropage+1 
      bne !loop-
 }
 .macro setColor(x,y,color) {
@@ -141,6 +142,15 @@
      else {
           lda #color 
           sta VIC.SpriteAuxiliaryColor2
+     }
+}
+
+.macro setTile(x,y) {
+    .var offset = x*8+y*40*8 
+     
+     .for(var i = 0; i < 8; i++) {
+          lda Tiles+i 
+          sta bitmapScrBase+offset+i
      }
 }
 
@@ -224,7 +234,7 @@
      sta CIA.ctrlOutput
      lda CIA.memoryBank 
      and #%11111100 
-     ora #bankNo
+     ora #($3&(~bankNo))
      sta CIA.memoryBank
 
 }
@@ -234,6 +244,15 @@
      lda VIC.Char_BankCtrl 
      and #$0f
      ora #(1<<bankNo)
+     sta VIC.Char_BankCtrl
+}
+
+.macro toggleBitmapBank(switch) {
+     lda VIC.Char_BankCtrl
+     and #%11110111
+     .if(switch) {
+          ora #8
+     }
      sta VIC.Char_BankCtrl
 }
 

@@ -79,7 +79,7 @@
 .macro clearScreen() {
      sei 
      ldx #screenClrOffset
-     lda #$ea
+     lda #$f2
 !loop:
     sta videoBankStart+scr_ram,x 
     sta videoBankStart+scr_ram+screenClrOffset,x 

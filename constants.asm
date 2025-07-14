@@ -1,4 +1,5 @@
-.label zeropage = $fb 
+.label zeropage = $fb
+.label zeropage2 = $fd 
 .label scr_ram = $400
 .label bg_clr = $d020
 .label fg_clr = $d021 

@@ -12,6 +12,9 @@
 .label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
+    lda #0 
+    multiplyBy8(16,4)
+.break
     selectVideoBank(VideoBankNo)  
     clearScreen()
     setupRasterIRQ(customIRQ)
@@ -215,15 +218,64 @@ SpriteTableEnd:
 !end:
 }
 
+.macro multiplyBy8(value,times) {
+    lda #0 
+    sta zeropage 
+    sta zeropage2
+    sta zeropage2+1
+    lda #value
+    ldx #(times-1)
+    clc 
+.for(var k = 0; k < 3; k++) { 
+    rol
+    pha 
+        lda zeropage 
+        rol 
+        sta zeropage
+    pla 
+    clc
+}
+
+    sta zeropage+1
+    clc 
+    adc zeropage2+1 
+    sta zeropage2+1 
+    lda zeropage 
+    adc zeropage2 
+    sta zeropage2
+    lda #0
+    sta zeropage
+    sta zeropage+1
+!loop:
+    clc
+    lda zeropage+1
+    adc zeropage2+1 
+    sta zeropage+1
+    lda zeropage 
+    adc zeropage2 
+    sta zeropage 
+    dex 
+    bne !loop-
+}
+
 setTileAt:
     // x,y arethe position
-    clc 
-    lda #<bitmapScrBase
-     
-    sta zeropage 
+    lda #0
+    cpx #0
+    beq staY
+    sec
+!loop:
+    rol 
+    dex 
+    bne !loop-
+staY:
+    sta zeropage
+    lda #<bitmapScrBase 
+    adc zeropage 
+    sta zeropage  
     lda #>bitmapScrBase
     sta zeropage+1
-
+    rts
 
 *=videoBankStart+$1000
 Sprite1:

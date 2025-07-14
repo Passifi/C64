@@ -1,4 +1,8 @@
 .label screenClrOffset = 250
+.const bankSize = pow(2,14)
+.const VideoBankNo = 2
+.const videoBankStart = bankSize*VideoBankNo 
+
 .namespace colors {
     .label black         = 0
     .label white         = 1

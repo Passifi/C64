@@ -13,7 +13,9 @@
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     lda #0 
-    multiplyBy8(16,4)
+    multiplyByRow(12)
+    multiplyBy8(32)
+    finalValue()
 .break
     selectVideoBank(VideoBankNo)  
     clearScreen()
@@ -218,44 +220,56 @@ SpriteTableEnd:
 !end:
 }
 
-.macro multiplyBy8(value,times) {
-    lda #0 
-    sta zeropage 
-    sta zeropage2
-    sta zeropage2+1
+.macro multiplyBy8(value) {
+    lda #0
+    sta zeropage2 
     lda #value
-    ldx #(times-1)
+    sta zeropage2+1
     clc 
-.for(var k = 0; k < 3; k++) { 
-    rol
-    pha 
-        lda zeropage 
-        rol 
-        sta zeropage
-    pla 
-    clc
+    .for(var k = 0; k < 3; k++) { 
+        asl zeropage2+1 
+        rol zeropage2 
+        
+    }
+
 }
 
-    sta zeropage+1
-    clc 
-    adc zeropage2+1 
-    sta zeropage2+1 
-    lda zeropage 
-    adc zeropage2 
-    sta zeropage2
-    lda #0
+
+.macro multiplyByRow(y) {
+    lda #0 
     sta zeropage
+    sta zeropage2 
+    lda #y 
     sta zeropage+1
-!loop:
+    sta zeropage2+1 
+    clc 
+    .for(var k =0; k < 8; k++) {
+        asl zeropage+1 
+        rol zeropage 
+    }
     clc
-    lda zeropage+1
+    .for(var k =0; k < 6; k++) {
+        asl zeropage2+1 
+        rol zeropage2 
+    }
+    clc 
+    lda zeropage+1 
     adc zeropage2+1 
-    sta zeropage+1
+    sta zeropage+1 
     lda zeropage 
     adc zeropage2 
     sta zeropage 
-    dex 
-    bne !loop-
+
+}
+
+.macro finalValue() {
+    clc 
+    lda zeropage+1 
+    adc zeropage2+1 
+    sta zeropage+1 
+    lda zeropage 
+    adc zeropage2 
+    sta zeropage 
 }
 
 setTileAt:

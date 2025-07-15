@@ -145,6 +145,10 @@
      }
 }
 
+.macro setTileWithZeropage(tileNo) {
+     
+}
+
 .macro setTile(x,y) {
     .var offset = x*8+y*40*8 
      

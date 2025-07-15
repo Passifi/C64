@@ -16,7 +16,6 @@
     multiplyByRow(12)
     multiplyBy8(32)
     finalValue()
-.break
     selectVideoBank(VideoBankNo)  
     clearScreen()
     setupRasterIRQ(customIRQ)
@@ -222,13 +221,13 @@ SpriteTableEnd:
 
 .macro multiplyBy8(value) {
     lda #0
-    sta zeropage2 
+    sta zeropage2+1 
     lda #value
-    sta zeropage2+1
+    sta zeropage2
     clc 
     .for(var k = 0; k < 3; k++) { 
-        asl zeropage2+1 
-        rol zeropage2 
+        asl zeropage2 
+        rol zeropage2+1 
         
     }
 
@@ -237,28 +236,28 @@ SpriteTableEnd:
 
 .macro multiplyByRow(y) {
     lda #0 
+    sta zeropage+1
+    sta zeropage2+1
+    lda #y 
     sta zeropage
     sta zeropage2 
-    lda #y 
-    sta zeropage+1
-    sta zeropage2+1 
     clc 
     .for(var k =0; k < 8; k++) {
-        asl zeropage+1 
-        rol zeropage 
+        asl zeropage 
+        rol zeropage+1 
     }
     clc
     .for(var k =0; k < 6; k++) {
-        asl zeropage2+1 
-        rol zeropage2 
+        asl zeropage2 
+        rol zeropage2+1 
     }
     clc 
+    lda zeropage
+    adc zeropage2 
+    sta zeropage 
     lda zeropage+1 
     adc zeropage2+1 
     sta zeropage+1 
-    lda zeropage 
-    adc zeropage2 
-    sta zeropage 
 
 }
 

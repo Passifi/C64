@@ -14,9 +14,10 @@
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     lda #0 
     clearBitmap()
-    lda #<Tiles
+    toggle38columns()
+    lda #<Tiles+1
     sta zeropage2 
-    lda #>Tiles 
+    lda #>Tiles+1 
     sta zeropage2+1
     jsr fillBitmap 
     selectVideoBank(VideoBankNo)  
@@ -55,6 +56,8 @@ customIRQ:
         bne !end+ 
         jsr moveSprite
         jsr setSprites
+
+        scrollRight() 
     !end:
     jmp $ea31
      
@@ -249,6 +252,7 @@ Sprite1:
 
 Tiles:
     .byte $41,$22,$14,$8,$14,$22,$41,$80
+    .byte $ff,$22,$22,$22,$22,$22,$22,$22 
 .macro turnOffKernal() {
     lda #$35
     sta $1

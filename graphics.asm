@@ -68,6 +68,7 @@
 
 .namespace VICCtrl2 {
      .label MultiColor = 16
+     .label ColumnMode = 8
      .label PixelOffsetBit2 = 4 
      .label PixelOffsetBit1 = 2 
      .label PixelOffsetBit0 = 1 
@@ -93,6 +94,28 @@
     dex 
     bne !loop-
     cli
+}
+
+.macro toggle38columns() {
+     lda VIC.CtrlReg2 
+     and #(~VICCtrl2.ColumnMode) 
+     ora #VICCtrl2.ColumnMode 
+     sta VIC.CtrlReg2 
+}
+XPos:
+     .byte $0
+.macro scrollRight() {
+     lda VIC.CtrlReg2
+     and #(~7)
+     ora XPos 
+     sta VIC.CtrlReg2
+     inc XPos 
+     lda XPos 
+     cmp #7
+     bne !end+
+     lda #0 
+     sta XPos 
+!end:
 }
 
 .macro activateSprite(no) {

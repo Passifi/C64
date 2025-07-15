@@ -13,18 +13,17 @@
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     lda #0 
-    multiplyByRow(12)
-    multiplyBy8(32)
-    finalValue()
+    clearBitmap()
+    lda #<Tiles
+    sta zeropage2 
+    lda #>Tiles 
+    sta zeropage2+1
+    jsr fillBitmap 
     selectVideoBank(VideoBankNo)  
-    clearScreen()
+    clearScreen(calculateColorPair(colors.black,colors.grey))
     setupRasterIRQ(customIRQ)
     toggleBitmap(true) 
     toggleBitmapBank(true) 
-    clearBitmap()
-    .for(var i =0; i < 30; i++) {
-        setTile(i,0)
-    }
     lda #255
     sta SpriteActiveReg 
     lda  #(calcSpritePtr(Sprite1))
@@ -218,59 +217,6 @@ SpriteTableEnd:
     }
 !end:
 }
-
-.macro multiplyBy8(value) {
-    lda #0
-    sta zeropage2+1 
-    lda #value
-    sta zeropage2
-    clc 
-    .for(var k = 0; k < 3; k++) { 
-        asl zeropage2 
-        rol zeropage2+1 
-        
-    }
-
-}
-
-
-.macro multiplyByRow(y) {
-    lda #0 
-    sta zeropage+1
-    sta zeropage2+1
-    lda #y 
-    sta zeropage
-    sta zeropage2 
-    clc 
-    .for(var k =0; k < 8; k++) {
-        asl zeropage 
-        rol zeropage+1 
-    }
-    clc
-    .for(var k =0; k < 6; k++) {
-        asl zeropage2 
-        rol zeropage2+1 
-    }
-    clc 
-    lda zeropage
-    adc zeropage2 
-    sta zeropage 
-    lda zeropage+1 
-    adc zeropage2+1 
-    sta zeropage+1 
-
-}
-
-.macro finalValue() {
-    clc 
-    lda zeropage+1 
-    adc zeropage2+1 
-    sta zeropage+1 
-    lda zeropage 
-    adc zeropage2 
-    sta zeropage 
-}
-
 setTileAt:
     // x,y arethe position
     lda #0

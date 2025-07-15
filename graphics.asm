@@ -76,10 +76,15 @@
      .label bitmapScrBase = $6000
 
      .label color_ram = $d800
-.macro clearScreen() {
+.function calculateColorPair(color1, color2 ) {
+     .return (color1 << 4) | (color2&$0f) 
+}
+
+
+.macro clearScreen(value) {
      sei 
      ldx #screenClrOffset
-     lda #$f2
+     lda #value
 !loop:
     sta videoBankStart+scr_ram,x 
     sta videoBankStart+scr_ram+screenClrOffset,x 
@@ -117,6 +122,7 @@
      sta color_ram+result
 }
 
+
 .macro deactivateSprite(no) {
      lda VIC.ActiveSpriteRegister 
      and #(~(1<<no)) 
@@ -144,19 +150,36 @@
           sta VIC.SpriteAuxiliaryColor2
      }
 }
+// zeropage should contain the right memory address
+.macro setTileWithZeropage(tileAddress) {
+     lda #<tileAddress 
+     sta zeropage2 
+     lda #>tileAddress
+     sta zeropage2+1
+     clc
+     lda #<bitmapScrBase
+     adc zeropage 
+     sta zeropage 
+     lda #>bitmapScrBase 
+     adc zeropage+1 
+     sta zeropage+1
+     ldy #7
+!loop:
+     lda (zeropage2),y 
+     sta (zeropage),y 
+     dey 
+     bpl !loop-
 
-.macro setTileWithZeropage(tileNo) {
-     
 }
 
 .macro setTile(x,y) {
     .var offset = x*8+y*40*8 
-     
      .for(var i = 0; i < 8; i++) {
           lda Tiles+i 
           sta bitmapScrBase+offset+i
      }
 }
+
 
 .macro setSpritePtr(no, ptr) {
     lda #ptr
@@ -271,6 +294,94 @@
 .macro moveSprite(no,x,y) {
 
 }
+
+.macro multiplyBy8(value) {
+    lda #0
+    sta zeropage2+1 
+    lda #value
+    sta zeropage2
+    clc 
+    .for(var k = 0; k < 3; k++) { 
+        asl zeropage2 
+        rol zeropage2+1 
+        
+    }
+
+}
+
+
+.macro multiplyByRow(y) {
+    lda #0 
+    sta zeropage+1
+    sta zeropage2+1
+    lda #y 
+    sta zeropage
+    sta zeropage2 
+    clc 
+    .for(var k =0; k < 8; k++) {
+        asl zeropage 
+        rol zeropage+1 
+    }
+    clc
+    .for(var k =0; k < 6; k++) {
+        asl zeropage2 
+        rol zeropage2+1 
+    }
+    clc 
+    lda zeropage
+    adc zeropage2 
+    sta zeropage 
+    lda zeropage+1 
+    adc zeropage2+1 
+    sta zeropage+1 
+
+}
+
+.macro finalValue() {
+    clc 
+    lda zeropage+1 
+    adc zeropage2+1 
+    sta zeropage+1 
+    lda zeropage 
+    adc zeropage2 
+    sta zeropage 
+}
+.label tileAddress = $fd
+.macro writeCurrentTile() {
+    ldy #7
+!loop2:
+     lda (tileAddress),y
+     sta (zeropage),y
+     dey
+     bpl !loop2-
+} 
+.label counterByte = $02
+fillBitmap: // expects tileadress in zeropage2 
+     lda #<bitmapScrBase
+     sta zeropage
+     lda #>bitmapScrBase
+     sta zeropage+1
+     ldy #8
+     ldx #255
+!loopPrepare: 
+     tya
+     pha
+!loop: 
+     writeCurrentTile()
+     clc
+     lda #8 
+     adc zeropage 
+     sta zeropage 
+     bcc !next+ 
+     inc zeropage+1  
+!next:
+     dex
+     bne !loop-
+     pla 
+     tay
+     dey 
+     bne !loopPrepare- 
+     rts 
 
 .struct Point {x,y}
 

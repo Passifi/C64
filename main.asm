@@ -3,6 +3,8 @@
 .import source "graphics.asm"
 .import source "input.asm"
 .import source "strings.asm"
+.import source "sound.asm"
+
 .function calcSpritePtr(address) {
     .return ((address-videoBankStart)/64)
 }
@@ -13,6 +15,8 @@
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     lda #0 
+    basicTestASM()
+     
     clearBitmap()
     toggle38columns()
     lda #<Tiles+1

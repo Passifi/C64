@@ -447,13 +447,11 @@ loadTileMap:
      adc #64
      sta bitmapzp_low
      bcc !noCarry+
-.break
      inc bitmapzp_high
 !noCarry: 
      inx
      cpx #tilemapLength 
      bne !loop-
-.break
      rts
 
 BitmapAddress:

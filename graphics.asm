@@ -419,11 +419,42 @@ fillBitmap: // expects tileadress in zeropage2
      dey 
      bne !loopPrepare- 
      rts 
+.const tilemapLength = TilemapEnd - Tilemap
+.label bitmapzp_low = $02
+.label bitmapzp_high = $03
+.label tileZeropage = zeropage2
+.label TilemapZeropage = zeropage
+loadTileMap:
+     loadAddress(bitmapScrBase,bitmapzp_low)
+     loadAddress(Tilemap,TilemapZeropage)
+     loadAddress(Tiles,tileZeropage) 
+     ldx #0
+!loop:
+     txa
+     tay
+     lda (TilemapZeropage),y
+     clc
+     adc #<Tiles 
+     sta tileZeropage
+     ldy #64
+!tileLoop:
+          lda (tileZeropage),y 
+          sta (bitmapzp_low),y 
+          dey 
+          bpl !tileLoop-
+     clc 
+     lda bitmapzp_low
+     adc #64
+     sta bitmapzp_low
+     bcc !noCarry+
+.break
+     inc bitmapzp_high
+!noCarry: 
+     inx
+     cpx #tilemapLength 
+     bne !loop-
+.break
+     rts
 
-.struct Point {x,y}
-
-.struct Sprite {
-     x,
-     y,
-     ptr
-}
+BitmapAddress:
+     .word $00

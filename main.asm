@@ -19,7 +19,7 @@
     sta zeropage2 
     lda #>Tiles+1 
     sta zeropage2+1
-    jsr fillBitmap 
+    jsr loadTileMap
     selectVideoBank(VideoBankNo)  
     clearScreen(calculateColorPair(colors.black,colors.grey))
     setupRasterIRQ(customIRQ)
@@ -272,6 +272,7 @@ Tilemap:
     .byte 1,1,1,1,1,1,1,1
     .byte 3,2,1,4,4,0,0,4
     .byte 0,0,0,0,0,0,0,0
+TilemapEnd:
 
 .macro turnOffKernal() {
     lda #$35

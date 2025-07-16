@@ -18,3 +18,10 @@
 .namespace petscii {
     .label blank = 32
 }
+
+.macro loadAddress(address,page) {
+    lda #<address
+    sta page 
+    lda #>address 
+    sta page+1
+}

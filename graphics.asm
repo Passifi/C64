@@ -157,6 +157,20 @@ XPos:
           sta VIC.Sprite1Color+no
 }
 
+.macro toggleMultiColor(value) {
+     
+     lda VIC.CtrlReg2 
+     .if(value) {
+     ora #(VICCtrl2.MultiColor)
+     }
+     else {
+
+          and #(~VICCtrl2.MultiColor)
+
+     }
+     sta VIC.CtrlReg2
+}
+
 .macro setSpriteMultiColor(no) {
      lda VIC.MulticolorCtrl
      ora #(1<<no)

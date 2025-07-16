@@ -25,9 +25,10 @@
     setupRasterIRQ(customIRQ)
     toggleBitmap(true) 
     toggleBitmapBank(true) 
+    toggleMultiColor(true)
     lda #255
     sta SpriteActiveReg 
-    lda  #(calcSpritePtr(Sprite1))
+    lda  #(calcSpritePtr(Sprite1)+1)
     sta spritePtr1 
     .for(var x = 1; x < 8; x++) {
         setSpritePtr(x,calcSpritePtr(Sprite1))
@@ -248,11 +249,30 @@ Sprite1:
 .byte $78,$f9,$f9,$f8,$ca,$aa,$a8,$0a
 .byte $aa,$a8,$0a,$aa,$a8,$02,$aa,$a0
 .byte $02,$95,$a0,$00,$aa,$80,$00,$00
-.byte $00,$00,$00,$00,$00,$00,$00,$87
+.byte $00,$00,$00,$00,$00,$00,$00,$87 // throwway byte
+.byte $0,$0,$0,$0,$0,$0,$0,$0
+.byte $0,$0,$0,$0,$0,$0,$0,$0
+.byte $3f,$ff,$f0,$3f,$ff,$f0,$0,$28
+.byte $67,$6c,$25,$65,$6c,$a,$aa,$af
+.byte $a0,$2a,$aa,$a3,$2f,$6f,$6f,$2d
+.byte $a,$aa,$80,$2a,$aa,$a0,$2a,$aa
+.byte $0,$0,$2,$aa,$0,$a,$56,$80
+.byte $d2,$0,$0,$0,$0,$0,$0,$0
 
 Tiles:
     .byte $41,$22,$14,$8,$14,$22,$41,$80
     .byte $ff,$22,$22,$22,$22,$22,$22,$22 
+    .byte $3f,$ff,$f0,$3f,$ff,$f0,$0,$28
+    .byte $3d,$22,$22,$22,$22,$22,$22,$22 
+    .byte $aa,$a8,$0a,$aa,$a8,$02,$aa,$a0
+    .byte $ff,$22,$22,$22,$22,$22,$22,$22 
+
+Tilemap:
+    .byte 0,0,0,0,0,0,0,0
+    .byte 1,1,1,1,1,1,1,1
+    .byte 3,2,1,4,4,0,0,4
+    .byte 0,0,0,0,0,0,0,0
+
 .macro turnOffKernal() {
     lda #$35
     sta $1

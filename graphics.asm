@@ -2,7 +2,9 @@
 .const bankSize = pow(2,14)
 .const VideoBankNo = 1
 .const videoBankStart = bankSize*VideoBankNo 
-
+Tiles:
+Tilemap:
+TilemapEnd:
 .namespace colors {
     .label black         = 0
     .label white         = 1
@@ -212,7 +214,7 @@ XPos:
 .macro setTile(x,y) {
     .var offset = x*8+y*40*8 
      .for(var i = 0; i < 8; i++) {
-          lda Tiles+i 
+          lda 0+i 
           sta bitmapScrBase+offset+i
      }
 }
@@ -272,6 +274,10 @@ XPos:
           and #(~(VICCtrl1.Bitmapmode))
           sta VIC.CtrlReg1 
      }
+}
+.macro ACKRaster() {
+     lda VIC.IRQStatus 
+     sta VIC.IRQStatus
 }
 
 .macro setupRasterIRQ(customIrqAddress) {

@@ -15,8 +15,6 @@
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     lda #0 
-    basicTestASM()
-     
     clearBitmap()
     toggle38columns()
     lda #<Tiles+1
@@ -61,8 +59,6 @@ customIRQ:
         bne !end+ 
         jsr moveSprite
         jsr setSprites
-
-        scrollRight() 
     !end:
     jmp $ea31
      

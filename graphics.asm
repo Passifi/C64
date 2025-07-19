@@ -2,9 +2,11 @@
 .const bankSize = pow(2,14)
 .const VideoBankNo = 1
 .const videoBankStart = bankSize*VideoBankNo 
+#if !TileAddress 
 Tiles:
 Tilemap:
 TilemapEnd:
+#endif
 .namespace colors {
     .label black         = 0
     .label white         = 1
@@ -430,6 +432,7 @@ fillBitmap: // expects tileadress in zeropage2
 .label bitmapzp_high = $03
 .label tileZeropage = zeropage2
 .label TilemapZeropage = zeropage
+
 loadTileMap:
      loadAddress(bitmapScrBase,bitmapzp_low)
      loadAddress(Tilemap,TilemapZeropage)

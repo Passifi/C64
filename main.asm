@@ -14,42 +14,29 @@
 .label stepSize = 32
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
-    lda #0 
-    clearBitmap()
-    toggle38columns()
+setup:
+    // setup raster irq
+    setupRasterIRQ(customIRQ)
+    //load in tiles 
     lda #<Tiles+1
     sta zeropage2 
     lda #>Tiles+1 
     sta zeropage2+1
     jsr loadTileMap
-    selectVideoBank(VideoBankNo)  
+    clearBitmap()
     clearScreen(calculateColorPair(colors.black,colors.grey))
-    setupRasterIRQ(customIRQ)
+    // setup memory Bank
+    selectVideoBank(VideoBankNo)  
+    // activate correct videomode 
     toggleBitmap(true) 
     toggleBitmapBank(true) 
     toggleMultiColor(true)
-    lda #255
-    sta SpriteActiveReg 
-    lda  #(calcSpritePtr(Sprite1)+1)
-    sta spritePtr1 
-    .for(var x = 1; x < 8; x++) {
-        setSpritePtr(x,calcSpritePtr(Sprite1))
-        setValue(Sprite0AccuX+x*5,$30+x*10)
-        setValue(Sprite0AccuY+x*5,$30+x*20)
-        setSpriteMultiColor(x)
-        setSpriteColor(x,x)
-        setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
-    }
-    lda #120
-    sta Sprite1XLow 
-    sta Sprite1Y
-    setSpriteMultiColor(0)
-    setSpriteColor(0,colors.orange)
-    setSpriteAuxiliaryColor(0,colors.white)
-    setSpriteAuxiliaryColor(1,colors.black)
-    
-!loop:
-    jmp !loop-
+    // activate all sprites 
+    initializeSprites()
+   
+setupend:    
+!main:
+    jmp !main-
 
 customIRQ:
         lda VIC.IRQStatus 
@@ -67,24 +54,7 @@ setSprites:
         setSpriteViaAddress(i,Sprite0AccuX+i*5,Sprite0AccuY+i*5)
     }
     rts 
-setupNMI:
-    ldx $dd0d // CIA-2
-    lda #%01111111 // deactivate all interrupts 
-    sta $dd0d 
-    lda #<nmi 
-    sta $0318 
-    lda #>nmi 
-    sta $0319
-    lda #$ff 
-    sta $dd04 // cia timer 
-    lda #$1
-    sta $dd05 // cia timer high byte
-    lda #1 // start timer in cia-2 
-    sta $dd0e 
-    txa 
-    ora #%10000001
-    sta $dd0d 
-    rts 
+
 moveSprite:
     moveObject(PlayerXAccu,RIGHT,stepSize)
    .for(var i =0; i < 7; i++)
@@ -99,6 +69,21 @@ nmi:
 !exit:
     PullRegisters()
     rti
+
+.macro initializeSprites() {
+    lda #$ff
+    sta SpriteActiveReg  
+    .for(var x = 1; x < 8; x++) {
+        setSpritePtr(x,calcSpritePtr(Sprite1))
+        setValue(Sprite0AccuX+x*5,$30+x*10)
+        setValue(Sprite0AccuY+x*5,$30+x*20)
+        setSpriteMultiColor(x)
+        setSpriteColor(x,x)
+        setSpriteViaAddress(x,Sprite0AccuX+x*5,Sprite0AccuY+x*5);
+    }
+    setSpriteAuxiliaryColor(0,colors.white)
+    setSpriteAuxiliaryColor(1,colors.black)
+}
 
 .macro setValue(address,value) {
     lda #value 
@@ -159,7 +144,7 @@ Sprite7AccuY:
 msg:
 .text "hello from myself, and jesus"        
 msgEnd:
-
+#define TileAddress
 SpriteTable:
     .for(var x = 0; x < 8; x++) {
         .word $ff33

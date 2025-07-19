@@ -38,6 +38,13 @@
     .label filterHigh = SIDBase + $16
     .label res_filterCtr = SIDBase + $17 
     .label Volume = SIDBase+24
+    .label FilterType = SIDBase+24
+}
+
+.namespace FilterTypes {
+    .label Highpass = 64
+    .label Bandpass = 32 
+    .label Lowpass = 16
 }
 
 .macro setNote(note) {
@@ -54,6 +61,12 @@
     sta SID.filterHigh
 }
 
+.macro setFiltertype(type)
+{
+    lda SID.FilterType
+    ora #type
+    sta SID.FilterType
+}
 .macro setWaveform(value) {
    lda #value+1 
    sta SID.Voice1Waveform 

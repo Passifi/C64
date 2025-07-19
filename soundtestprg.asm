@@ -8,8 +8,8 @@
     createNMI(rasterIRQ)
     resetSID() 
     setFilter(1200)
-    setDutyCycle(200)
-    lda #%11110000
+    setDutyCycle(3400)
+    lda #%11110001
     sta SID.res_filterCtr 
     lda #%00011111
     sta SID.Volume
@@ -22,31 +22,38 @@
 rasterIRQ:
     NMIStart()
     and #(IRQCtrl.TimerAIRQ)
-    beq !exit+ 
+    beq !exit+
+    inc VIC.frameColor 
     jsr soundRoutine
 !exit:
     NMIEnd()
     
 soundRoutine:
+    inc Timer 
+    lda Timer 
+    cmp #12
+    bne !end+
+    lda #0 
+    sta Timer
     lda #<MusicData 
     sta $fb 
     lda #>MusicData
     sta $fc 
     ldy Index
-    lda #Waveforms.Square+1
+    lda #Waveforms.Saw|1
     sta SID.Voice1Waveform
     lda ($fb),y
-    sta SID.Voice1FreqHigh 
+    sta SID.Voice1FreqLow 
     iny 
     lda ($fb),y 
-    sta SID.Voice1FreqLow 
+    sta SID.Voice1FreqHigh 
     iny
     cpy #11 
-    bne !next+
+    bcc !next+
     ldy #0
 !next: 
-    tya 
-    sta Index
+    sty Index
+!end:
     rts 
 Timer: 
     .word $0101
@@ -59,4 +66,12 @@ MusicData:
     .word noteValues.GSharp_1
     .word noteValues.B_1
     .word noteValues.C_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
+    .word noteValues.ASharp_1
     .word noteValues.ASharp_1

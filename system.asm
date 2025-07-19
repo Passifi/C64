@@ -76,14 +76,15 @@
     sta $0318 
     lda #>nmiAddress 
     sta $0319
-    setTimerA(2,21824) 
-    sta CIA2.TimerACtrl 
+    setTimerA(2,65000)
+    lda #1
+    sta CIA2.TimerACtrl
     txa 
     setIRQCIA2(IRQCtrl.TimerAIRQ)
 }
 
 .macro setIRQCIA2(flags) {
-    ora #(128 | flags)
+    ora #%10000001
     sta CIA2.IRQCtrl 
 }
 

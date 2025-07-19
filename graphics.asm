@@ -39,7 +39,9 @@ TilemapEnd:
      .label RasterlineInterrupt = $d012
      .label CtrlReg2 = $d016 
      .label Char_BankCtrl = $d018
-     .label IRQStatus = $d019 
+     .label IRQStatus = $d019
+     .label frameColor = $d020
+     .label backgroundColor = $d021 
      .label SpriteAuxiliaryColor1 = $d025
      .label SpriteAuxiliaryColor2 = $d026 
      .label Sprite1Color = $d027 

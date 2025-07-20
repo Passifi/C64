@@ -5,13 +5,19 @@
 .import source "system.asm"
 .namespace SoundEvent {
     .label Off = 0 
-    .label On = 1 
+    .label On = 64
     .label WaveformChange = 2 
     .label FilterChange = 4
     .label ADSRChange = 8
     .label PulswidthChange = 16
-    .label FrequencyChange = 32 
+    .label FrequencyChange = 128
 
+}
+
+.namespace EventOffset {
+    .label TurnOn = On-switchStart
+    .label TurnOff = Off-switchStart
+    .label FrqChange = ChangeFrequency-switchStart
 }
 
 .namespace WaveformData { // lowByte for the register value,  HighByte for the VoiceNumber
@@ -51,6 +57,43 @@ rasterIRQ:
     jsr soundRoutine
 !exit:
     NMIEnd()    
+
+switchOn:   // voice on a (load 0 for 1 7 for 2 14 for 3)
+    clc 
+    ldx #0
+    adc #<SID.Voice1Waveform
+    sta zeropage2  
+    lda #>SID.Voice1Waveform
+    sta zeropage2+1 
+    lda (zeropage2,x)
+    ora #1
+    sta (zeropage2,x)
+    rts  
+switchOff:   // voice on a (load 0 for 1 7 for 2 14 for 3)
+    clc 
+    ldx #0
+    adc #<SID.Voice1Waveform
+    sta zeropage2  
+    lda #>SID.Voice1Waveform
+    sta zeropage2+1 
+    lda (zeropage2,x)
+    and #%1111110
+    sta (zeropage2,x)
+    rts  
+setFrequency: // voice on a
+    clc 
+    ldx #0 
+    adc #<SID.Voice1FreqLow
+    sta zeropage2 
+    lda #>SID.Voice1FreqLow
+    sta zeropage2+1 
+    lda (zeropage),y
+    sta (zeropage2,x)
+    inc zeropage2
+    iny 
+    lda (zeropage),y 
+    sta (zeropage2,x)
+    rts
 soundRoutine:
     
     dec Timer 
@@ -69,6 +112,18 @@ eventTest:
     lda #>MusicData
     sta $fc 
     ldy Index
+    lda (zeropage),y
+    clc 
+    adc #<switchStart
+    sta switchStart+1
+    lda #>switchStart 
+    sta switchStart+2
+switchStart:
+    jmp $ffff 
+On:
+Off:
+ChangeFrequency:
+EndOfTable:
     setFrequency(1)
     cpy #11 
     bcc !next+
@@ -120,7 +175,8 @@ Index:
     .byte 0
 
 MusicData:
-    .word SoundEvent.On, noteValues.ASharp_1, 1200
+    .byte SoundEvent.On
+    .word noteValues.ASharp_1, 1200
     .word SoundEvent.WaveformChange,(Waveforms.Saw<<8 | 01) , 1200
     .word SoundEvent.On, noteValues.ASharp_1, 1200
     .word SoundEvent.On, noteValues.ASharp_1, 1200

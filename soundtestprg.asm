@@ -3,8 +3,32 @@
 .import source "graphics.asm"
 .import source "sound.asm"
 .import source "system.asm"
+.namespace SoundEvent {
+    .label Off = 0 
+    .label On = 1 
+    .label WaveformChange = 2 
+    .label FilterChange = 4
+    .label ADSRChange = 8
+    .label PulswidthChange = 16
+    .label FrequencyChange = 32 
+
+}
+
+.namespace WaveformData { // lowByte for the register value,  HighByte for the VoiceNumber
+    
+}
+
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
+    
+    // short bittest 
+    lda #64 
+    sta zeropage
+    bit zeropage
+    lda #32
+    sta zeropage
+    lda #64 
+    bit zeropage
     createNMI(rasterIRQ)
     resetSID() 
     setFilter(1200)
@@ -26,28 +50,26 @@ rasterIRQ:
     inc VIC.frameColor 
     jsr soundRoutine
 !exit:
-    NMIEnd()
-    
+    NMIEnd()    
 soundRoutine:
-    inc Timer 
-    lda Timer 
-    cmp #12
+    
+    dec Timer 
+    quickZeroWordTest(Timer)
     bne !end+
-    lda #0 
-    sta Timer
+eventTest:
+    // if timer is 0 we test
+    // All 0 execute switch voice off (two ways either direct jump to different
+    // voice sections or just setting the register with the zeropage and adding)
+    // 1 Switch voice on dito 
+    // 2 etc so I need a subroutine for each of these 
+    // last if new timer is 0 we inc the index and jump back here 
+    
     lda #<MusicData 
     sta $fb 
     lda #>MusicData
     sta $fc 
     ldy Index
-    lda #Waveforms.Saw|1
-    sta SID.Voice1Waveform
-    lda ($fb),y
-    sta SID.Voice1FreqLow 
-    iny 
-    lda ($fb),y 
-    sta SID.Voice1FreqHigh 
-    iny
+    setFrequency(1)
     cpy #11 
     bcc !next+
     ldy #0
@@ -55,20 +77,63 @@ soundRoutine:
     sty Index
 !end:
     rts 
+.macro quickZeroWordTest(address) {
+    lda address 
+    ora address+1 
+}
+
+.macro turnVoiceOff (voiceNo) {
+    .var registerAddress = SID.Voice1Waveform+(voiceNo-1)*SID.VoiceLength
+    lda registerAddress
+    and #%11111110
+    sta registerAddress
+    
+}
+
+.macro setFrequency(voiceNo) {
+   
+    .var registerAddress = SID.Voice1FreqLow+(voiceNo-1)*SID.VoiceLength
+    lda ($fb),y
+    sta registerAddress
+    iny 
+    lda ($fb),y 
+    sta registerAddress+1 
+    iny  
+}
+
+.macro turnVoiceOn(voiceNo) {
+    .var registerAddress = SID.Voice1Waveform+(voiceNo-1)*SID.VoiceLength
+    lda registerAddress
+    ora #%00000001
+    sta registerAddress
+ 
+}
+
+
+
+Buffer: 
+    .word $0000
 Timer: 
     .word $0101
 
 Index: 
     .byte 0
+
 MusicData:
-    .word noteValues.ASharp_1
-    .word noteValues.FSharp_1
-    .word noteValues.GSharp_1
-    .word noteValues.B_1
-    .word noteValues.C_1
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
+    .word SoundEvent.On, noteValues.ASharp_1, 1200
+    .word SoundEvent.WaveformChange,(Waveforms.Saw<<8 | 01) , 1200
+    .word SoundEvent.On, noteValues.ASharp_1, 1200
+    .word SoundEvent.On, noteValues.ASharp_1, 1200
+    // structure event, eventvalue, timerValue
+    .word noteValues.ASharp_1,340
+    .word noteValues.FSharp_1,340
+    .word noteValues.GSharp_1,340
+    .word 00,340
+    .word noteValues.B_1,1200
+    .word noteValues.C_1,32
+    .word noteValues.ASharp_1,120
+    .word noteValues.ASharp_1,323
+    .word noteValues.ASharp_1,323
     .word noteValues.ASharp_1
     .word noteValues.ASharp_1
     .word noteValues.ASharp_1

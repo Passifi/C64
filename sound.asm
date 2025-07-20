@@ -39,6 +39,7 @@
     .label res_filterCtr = SIDBase + $17 
     .label Volume = SIDBase+24
     .label FilterType = SIDBase+24
+    .const voiceLength = 7
 }
 
 .namespace FilterTypes {

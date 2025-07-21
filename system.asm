@@ -76,7 +76,7 @@
     sta $0318 
     lda #>nmiAddress 
     sta $0319
-    setTimerA(2,65000)
+    setTimerA(2,3200)
     lda #1
     sta CIA2.TimerACtrl
     txa 
@@ -106,7 +106,6 @@
         sta CIA1.TimerAHighByte
     }
     else {
-.break
         lda #<value 
         sta CIA2.TimerALowByte 
         lda #>value 

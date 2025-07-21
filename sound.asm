@@ -71,6 +71,8 @@
 .macro setWaveform(value) {
    lda #value+1 
    sta SID.Voice1Waveform 
+   sta SID.Voice1Waveform+7 
+    
 }
 
 .macro setDutyCycle(value) {
@@ -78,6 +80,13 @@
     sta SID.Voice1PulsewaveDutyCycleLow
     lda #>value 
     sta SID.Voice1PulsewaveDutyCycleHigh
+}
+
+.macro setADSR(value,voice) {
+    lda #(value>>8)
+    sta SID.ADVoice1+((voice-1)*7)
+    lda #(value&$ff)
+    sta SID.SRVoice1+((voice-1)*7)
 }
 
 .macro resetSID() {

@@ -39,14 +39,15 @@
     resetSID() 
     setFilter(1200)
     setDutyCycle(3400)
-    lda #%11110001
+     
+    lda #%11110000
     sta SID.res_filterCtr 
     lda #%00011111
     sta SID.Volume
-    lda #$13 
-    sta SID.ADVoice1
-    lda #$fa
-    sta SID.SRVoice1
+    setADSR($00f0,1)
+    setADSR($00f0,2)
+    setADSR($00f0,3)
+     
     jmp * 
 
 rasterIRQ:
@@ -59,15 +60,20 @@ rasterIRQ:
     NMIEnd()    
 
 switchOn:   // voice on a (load 0 for 1 7 for 2 14 for 3)
+.break
     clc 
     ldx #0
     adc #<SID.Voice1Waveform
     sta zeropage2  
     lda #>SID.Voice1Waveform
     sta zeropage2+1 
-    lda (zeropage2,x)
-    ora #1
+    lda #33
+    //lda (zeropage2,x)
+    //ora #65
     sta (zeropage2,x)
+    iny
+    iny
+    iny 
     rts  
 switchOff:   // voice on a (load 0 for 1 7 for 2 14 for 3)
     clc 
@@ -79,6 +85,9 @@ switchOff:   // voice on a (load 0 for 1 7 for 2 14 for 3)
     lda (zeropage2,x)
     and #%1111110
     sta (zeropage2,x)
+    iny
+    iny 
+    iny 
     rts  
 setFrequency: // voice on a
     clc 
@@ -87,26 +96,25 @@ setFrequency: // voice on a
     sta zeropage2 
     lda #>SID.Voice1FreqLow
     sta zeropage2+1 
+    iny
     lda (zeropage),y
     sta (zeropage2,x)
     inc zeropage2
     iny 
     lda (zeropage),y 
     sta (zeropage2,x)
+    iny
     rts
 soundRoutine:
-    
+    lda Timer 
+    sta scr_ram+12
     dec Timer 
+    bpl !test+ 
+    dec Timer+1
+!test:
     quickZeroWordTest(Timer)
     bne !end+
 eventTest:
-    // if timer is 0 we test
-    // All 0 execute switch voice off (two ways either direct jump to different
-    // voice sections or just setting the register with the zeropage and adding)
-    // 1 Switch voice on dito 
-    // 2 etc so I need a subroutine for each of these 
-    // last if new timer is 0 we inc the index and jump back here 
-    
     lda #<MusicData 
     sta $fb 
     lda #>MusicData
@@ -118,14 +126,27 @@ eventTest:
     sta switchStart+1
     lda #>switchStart 
     sta switchStart+2
+    iny
+    lda (zeropage),y
 switchStart:
     jmp $ffff 
 On:
+    jsr switchOn
+    jmp EndOfTable
 Off:
+    jsr switchOff 
+    jmp EndOfTable
 ChangeFrequency:
+    jsr setFrequency
 EndOfTable:
-    setFrequency(1)
-    cpy #11 
+.break
+    lda (zeropage),y
+    sta Timer
+    iny
+    lda (zeropage),y
+    sta Timer+1
+    iny 
+    cpy #(MusicDataEnd-MusicData)
     bcc !next+
     ldy #0
 !next: 
@@ -169,30 +190,39 @@ EndOfTable:
 Buffer: 
     .word $0000
 Timer: 
-    .word $0101
+    .word $0001
 
 Index: 
     .byte 0
 
 MusicData:
-    .byte SoundEvent.On
-    .word noteValues.ASharp_1, 1200
-    .word SoundEvent.WaveformChange,(Waveforms.Saw<<8 | 01) , 1200
-    .word SoundEvent.On, noteValues.ASharp_1, 1200
-    .word SoundEvent.On, noteValues.ASharp_1, 1200
+    .byte EventOffset.TurnOn,14 
+    .word 0,1
+    .byte EventOffset.FrqChange,14 
+    .word noteValues.GSharp_1*8,1
+    .byte EventOffset.TurnOn, $07
+    .word noteValues.ASharp_1*4,12
+     .byte EventOffset.FrqChange, $07
+    .word noteValues.C_1*4, 20
+    .byte EventOffset.TurnOn, $00
+    .word noteValues.ASharp_1*2,12
+    .byte EventOffset.FrqChange, $00
+    .word noteValues.E_1*4, 20
+  .byte EventOffset.TurnOn, $07
+    .word noteValues.A_1*4,12
+     .byte EventOffset.FrqChange, $07
+    .word noteValues.B_1*4, 20
+    .byte EventOffset.TurnOn, $00
+    .word noteValues.ASharp_1*2,12
+    .byte EventOffset.FrqChange, $00
+    .word noteValues.F_1*4, 20
+    .byte EventOffset.FrqChange,14 
+    .word noteValues.A_1*8,120
+ 
+
+
+    
+    
     // structure event, eventvalue, timerValue
-    .word noteValues.ASharp_1,340
-    .word noteValues.FSharp_1,340
-    .word noteValues.GSharp_1,340
-    .word 00,340
-    .word noteValues.B_1,1200
-    .word noteValues.C_1,32
-    .word noteValues.ASharp_1,120
-    .word noteValues.ASharp_1,323
-    .word noteValues.ASharp_1,323
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
-    .word noteValues.ASharp_1
+    
+MusicDataEnd:

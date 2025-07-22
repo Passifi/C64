@@ -47,47 +47,46 @@ rasterIRQ:
     inc VIC.frameColor 
     jsr soundRoutine
 !exit:
-    NMIEnd()    
+    NMIEnd()   
 
-switchOn:   // voice on a (load 0 for 1 7 for 2 14 for 3)
-    clc 
+switchOn:   // voice on a (load 0 for 1 7 for 2 14 for 3) clc 
     ldx #0
     adc #<SID.Voice1Waveform
-    sta zeropage2  
+    sta SIDZeropageLow  
     lda #>SID.Voice1Waveform
-    sta zeropage2+1 
+    sta SIDZeropageLow+1 
     lda #33
-    //lda (zeropage2,x)
+    //lda (SIDZeropageLow,x)
     //ora #65
-    sta (zeropage2,x)
+    sta (SIDZeropageLow,x)
     iny 
     rts  
 switchOff:   // voice on a (load 0 for 1 7 for 2 14 for 3)
     clc 
     ldx #0
     adc #<SID.Voice1Waveform
-    sta zeropage2  
+    sta SIDZeropageLow  
     lda #>SID.Voice1Waveform
-    sta zeropage2+1 
-    lda (zeropage2,x)
+    sta SIDZeropageLow+1 
+    lda (SIDZeropageLow,x)
     and #%1111110
-    sta (zeropage2,x)
+    sta (SIDZeropageLow,x)
     iny 
     rts  
 setFrequency: // voice on a
     clc 
     ldx #0 
     adc #<SID.Voice1FreqLow
-    sta zeropage2 
+    sta SIDZeropageLow 
     lda #>SID.Voice1FreqLow
-    sta zeropage2+1 
+    sta SIDZeropageLow+1 
     iny
-    lda (zeropage),y
-    sta (zeropage2,x)
-    inc zeropage2
+    lda (MusicdataZeropageLow),y
+    sta (SIDZeropageLow,x)
+    inc SIDZeropageLow
     iny 
-    lda (zeropage),y 
-    sta (zeropage2,x)
+    lda (MusicdataZeropageLow),y 
+    sta (SIDZeropageLow,x)
     iny
     rts
 soundRoutine:
@@ -100,13 +99,13 @@ soundRoutine:
     quickZeroWordTest(Timer)
     bne !end+
 eventTest:
-    lda #<MusicData 
-    sta $fb 
-    lda #>MusicData
-    sta $fc 
-    ldy Index
 !Instructions:
-    lda (zeropage),y
+    lda Index 
+    sta MusicdataZeropageLow 
+    lda Index+1 
+    sta MusicdataZeropageHigh
+    ldy #0
+    lda (MusicdataZeropageLow),y
     clc 
     adc #<switchStart
     sta switchStart+1
@@ -114,7 +113,7 @@ eventTest:
     adc #0 
     sta switchStart+2
     iny
-    lda (zeropage),y
+    lda (MusicdataZeropageLow),y
 switchStart:
     jmp $ffff 
 On:
@@ -126,21 +125,37 @@ Off:
 ChangeFrequency:
     jsr setFrequency
 EndOfTable:
-    lda (zeropage),y
+    lda (MusicdataZeropageLow),y
     sta Timer
     iny
-    lda (zeropage),y
+    lda (MusicdataZeropageLow),y
     sta Timer+1
     iny 
+    tya 
+    clc
+    adc Index 
+    sta Index 
+    bcc !ZeroTest+
+    inc Index+1
+!ZeroTest:
     quickZeroWordTest(Timer)
     beq !Instructions- 
-    cpy #(MusicDataEnd-MusicData)
+    lda Index 
+    cmp #<MusicDataEnd 
     bcc !next+
-    ldy #0
+    lda Index+1 
+    cmp #(>MusicDataEnd)
+    lda Index 
+    bcc !next+
+.break
+    lda #>MusicData
+    sta MusicdataZeropageHigh
+    lda #<MusicData 
 !next: 
-    sty Index
+    sta MusicdataZeropageLow
 !end:
     rts 
+
 .macro quickZeroWordTest(address) {
     lda address 
     ora address+1 
@@ -151,7 +166,6 @@ EndOfTable:
     lda registerAddress
     and #%11111110
     sta registerAddress
-    
 }
 
 .macro setFrequency(voiceNo) {
@@ -169,16 +183,13 @@ EndOfTable:
     lda registerAddress
     ora #%00000001
     sta registerAddress
-} Buffer: 
+} 
+Buffer: 
     .word $0000
 Timer: 
     .word $0001
-
 Index: 
-    .byte 0
-.const Voice1Offset = 0
-.const Voice2Offset = 7
-.const Voice3Offset = 14
+    .word MusicData
 MusicData:
     .byte EventOffset.TurnOn,Voice1Offset
     .word 0 
@@ -204,9 +215,4 @@ MusicData:
     .byte EventOffset.FreqChange,Voice3Offset
     .word noteValues.D_1*8 
     .word 132
-
-
-    
-    // structure event, eventvalue, timerValue
-    
 MusicDataEnd:

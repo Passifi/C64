@@ -1,4 +1,11 @@
 .label SIDBase = $D400
+.label MusicdataZeropageLow = $C0
+.label MusicdataZeropageHigh = $C1
+.label SIDZeropageLow= $C2
+.label SIDZeropageHigh = $C3 
+.const Voice1Offset = 0
+.const Voice2Offset = 7
+.const Voice3Offset = 14
 
 .namespace noteValues 
 {
@@ -46,6 +53,13 @@
     .label Highpass = 64
     .label Bandpass = 32 
     .label Lowpass = 16
+}
+
+.macro loadMusicdata(Address) {
+    lda #<Address 
+    sta MusicdataZeropageLow 
+    lda #>Address
+    sta MusicdataZeropageHigh
 }
 
 .macro setNote(note) {

@@ -22,7 +22,6 @@
 .namespace WaveformData { // lowByte for the register value,  HighByte for the VoiceNumber
     
 }
-
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
     createNMI(rasterIRQ)
@@ -33,12 +32,12 @@
     sta SID.res_filterCtr 
     lda #%00011111
     sta SID.Volume
-    setADSR($00ff,1)
-    setADSR($00ff,2)
-    setADSR($00ff,3)
+    setADSR($03aa,1)
+    setADSR($03aa,2)
+    setADSR($03a9,3)
     setWaveform(Waveforms.Triangle,0)
-    setWaveform(Waveforms.Triangle,1)
-    setWaveform(Waveforms.Triangle,2)
+    setWaveform(Waveforms.Square,1)
+    setWaveform(Waveforms.Noise,2)
      
     jmp * 
 
@@ -52,28 +51,47 @@ rasterIRQ:
     NMIEnd()   
 
 switchOn:   // voice on a (load 0 for 1 7 for 2 14 for 3) clc 
-    ldx #0
+.break
+     
+    tax
+    clc
     adc #<SID.Voice1Waveform
     sta SIDZeropageLow  
     lda #>SID.Voice1Waveform
     sta SIDZeropageLow+1 
-    lda (SIDZeropageLow,x)
-    ora #33
+    txa
+    clc 
+    adc #<Voice1Waveform
+    sta $fd 
+    lda #>Voice1Waveform
+    adc #0
+    sta $fe
+    ldx #0
+    lda ($fd,x)
+    ora #1
     sta (SIDZeropageLow,x)
     iny 
     rts  
 switchOff:   // voice on a (load 0 for 1 7 for 2 14 for 3)
-    clc 
-    ldx #0
+    tax
+    clc
     adc #<SID.Voice1Waveform
     sta SIDZeropageLow  
     lda #>SID.Voice1Waveform
     sta SIDZeropageLow+1 
-   // lda (SIDZeropageLow,x)
-    lda #32
+    txa
+    clc 
+    adc #<Voice1Waveform
+    sta $fd 
+    lda #>Voice1Waveform
+    adc #0
+    sta $fe
+    ldx #0
+    lda ($fd,x)
+    and #%11111110
     sta (SIDZeropageLow,x)
     iny 
-    rts  
+    rts    
 setFrequency: // voice on a
     clc 
     ldx #0 
@@ -190,6 +208,18 @@ Timer:
     .word $0001
 Index: 
     .word MusicData
+Voice1Waveform:
+    .byte 64
+    .byte 0,0,0,0,0,0 
+Voice2Waveform:
+    .byte 32
+     
+    .byte 0,0,0,0,0,0 
+Voice3Waveform:
+    .byte 32 
+
+
+
 MusicData:
     .byte EventOffset.TurnOn,Voice1Offset
     .word 0 
@@ -206,7 +236,7 @@ MusicData:
     .word 0 
     .byte EventOffset.FreqChange,Voice3Offset
     .word noteValues.GSharp_1*8 
-    .word 90
+    .word 200
     .byte EventOffset.FreqChange,Voice1Offset
     .word noteValues.E_1*8 
     .word 0 
@@ -215,9 +245,9 @@ MusicData:
     .word 0 
     .byte EventOffset.FreqChange,Voice3Offset
     .word noteValues.D_1*8 
-    .word 189
+    .word 200
     .byte EventOffset.FreqChange,Voice1Offset 
-    .word noteValues.FSharp_1*8,1200
+    .word noteValues.FSharp_1*8,210
     .byte EventOffset.FreqChange,Voice1Offset
     .word noteValues.B_1*8 
     .word 0 
@@ -226,6 +256,13 @@ MusicData:
     .word 0 
     .byte EventOffset.FreqChange,Voice3Offset
     .word noteValues.A_1*8 
-    .word 1200
+    .word 1300
+     .byte EventOffset.TurnOff,Voice1Offset
+    .word 0 
+    .byte EventOffset.TurnOff,Voice2Offset
+    .word 0 
+    .byte EventOffset.TurnOff,Voice3Offset
+    .word 320   
+    
     
 MusicDataEnd:

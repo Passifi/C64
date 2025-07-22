@@ -1,8 +1,8 @@
 .label SIDBase = $D400
 .label MusicdataZeropageLow = $C0
 .label MusicdataZeropageHigh = $C1
-.label SIDZeropageLow= $C2
-.label SIDZeropageHigh = $C3 
+.label SIDZeropageLow= $fb
+.label SIDZeropageHigh = $fc 
 .const Voice1Offset = 0
 .const Voice2Offset = 7
 .const Voice3Offset = 14
@@ -82,11 +82,9 @@
     ora #type
     sta SID.FilterType
 }
-.macro setWaveform(value) {
-   lda #value+1 
-   sta SID.Voice1Waveform 
-   sta SID.Voice1Waveform+7 
-    
+.macro setWaveform(value,voiceNo) {
+   lda #value 
+   sta SID.Voice1Waveform+7*voiceNo
 }
 
 .macro setDutyCycle(value) {
@@ -125,7 +123,7 @@
     lda #$fa
     sta SID.SRVoice1
     setNote(noteValues.C_4)
-    setWaveform(Waveforms.Square)
+    setWaveform(Waveforms.Square,0)
     lda #<music 
     sta $fb
     lda #>music 

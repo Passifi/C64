@@ -38,7 +38,6 @@
     setWaveform(Waveforms.Triangle,0)
     setWaveform(Waveforms.Square,1)
     setWaveform(Waveforms.Noise,2)
-     
     jmp * 
 
 rasterIRQ:
@@ -51,8 +50,6 @@ rasterIRQ:
     NMIEnd()   
 
 switchOn:   // voice on a (load 0 for 1 7 for 2 14 for 3) clc 
-.break
-     
     tax
     clc
     adc #<SID.Voice1Waveform

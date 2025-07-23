@@ -39,6 +39,7 @@ customIRQ:
         lda VIC.RasterlineInterrupt 
         cmp #250 
         bne !end+ 
+        jsr processInput 
         jsr moveSprite
         jsr setSprites
     !end:
@@ -84,6 +85,41 @@ nmi:
     lda #value 
     sta address
 } 
+.namespace JoyStick{
+    .label Up = 1
+    .label Down = 2
+    .label Left = 4
+    .label Right = 8 
+    .label Fire = 16 
+}
+
+processInput:
+    lda $DC00 
+    sta Input
+    lda #JoyStick.Up
+    bit Input 
+    bne DownTest 
+DownTest:
+    lda #JoyStick.Down
+    bit Input 
+    bne RightTest
+RightTest: 
+    lda #JoyStick.Right
+    bit Input
+    bne leftTest
+.break
+    moveObject(PlayerXAccu,RIGHT,120) 
+    jmp !end+ 
+leftTest:  
+    lda #JoyStick.Right
+    bit Input
+    bne !end+
+    moveObject(PlayerXAccu,LEFT,120) 
+!end:
+    rts
+
+Input:
+    .byte $01
 
 Timer:
     .word 00

@@ -87,11 +87,11 @@
    sta SID.Voice1Waveform+7*voiceNo
 }
 
-.macro setDutyCycle(value) {
+.macro setDutyCycle(value,voice) {
     lda #<value 
-    sta SID.Voice1PulsewaveDutyCycleLow
+    sta SID.Voice1PulsewaveDutyCycleLow+(voice-1)*Voice2Offset
     lda #>value 
-    sta SID.Voice1PulsewaveDutyCycleHigh
+    sta SID.Voice1PulsewaveDutyCycleHigh+(voice-1)*Voice2Offset
 }
 
 .macro setADSR(value,voice) {
@@ -113,7 +113,7 @@
 .macro basicTestASM() {
     resetSID() 
     setFilter(1200)
-    setDutyCycle(200)
+    setDutyCycle(200,1)
     lda #%11110000
     sta SID.res_filterCtr 
     lda #%00011111

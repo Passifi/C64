@@ -16,6 +16,7 @@
 .namespace EventOffset {
     .label TurnOn = On-switchStart
     .label TurnOff = Off-switchStart
+    .label setWaveform = setWaveformCase-switchStart 
     .label FreqChange = ChangeFrequency-switchStart
 }
 
@@ -27,7 +28,9 @@
     createNMI(rasterIRQ)
     resetSID() 
     setFilter(1200)
-    setDutyCycle(3400)
+    setDutyCycle($ff,1)
+    setDutyCycle($ff,2)
+    setDutyCycle($ff,3)
     lda #%11110000
     sta SID.res_filterCtr 
     lda #%00011111
@@ -35,9 +38,6 @@
     setADSR($03aa,1)
     setADSR($03aa,2)
     setADSR($03a9,3)
-    setWaveform(Waveforms.Triangle,0)
-    setWaveform(Waveforms.Square,1)
-    setWaveform(Waveforms.Noise,2)
     jmp * 
 
 rasterIRQ:
@@ -89,6 +89,19 @@ switchOff:   // voice on a (load 0 for 1 7 for 2 14 for 3)
     sta (SIDZeropageLow,x)
     iny 
     rts    
+setWaveform:
+    clc 
+    ldx #0
+    adc #<Voice1Waveform 
+    sta SIDZeropageLow 
+    lda #>Voice1Waveform 
+    adc #0 
+    sta SIDZeropageHigh 
+    iny 
+    lda (MusicdataZeropageLow),y 
+    sta (SIDZeropageLow,x)
+    iny 
+    rts 
 setFrequency: // voice on a
     clc 
     ldx #0 
@@ -139,6 +152,9 @@ On:
 Off:
     jsr switchOff 
     jmp EndOfTable
+setWaveformCase:    
+    jsr setWaveform 
+    jmp EndOfTable
 ChangeFrequency:
     jsr setFrequency
 EndOfTable:
@@ -175,30 +191,7 @@ EndOfTable:
     lda address 
     ora address+1 
 }
-
-.macro turnVoiceOff (voiceNo) {
-    .var registerAddress = SID.Voice1Waveform+(voiceNo-1)*SID.VoiceLength
-    lda registerAddress
-    and #%11111110
-    sta registerAddress
-}
-
-.macro setFrequency(voiceNo) {
-    .var registerAddress = SID.Voice1FreqLow+(voiceNo-1)*SID.VoiceLength
-    lda ($fb),y
-    sta registerAddress
-    iny 
-    lda ($fb),y 
-    sta registerAddress+1 
-    iny  
-}
-
-.macro turnVoiceOn(voiceNo) {
-    .var registerAddress = SID.Voice1Waveform+(voiceNo-1)*SID.VoiceLength
-    lda registerAddress
-    ora #%00000001
-    sta registerAddress
-} 
+ 
 Buffer: 
     .word $0000
 Timer: 
@@ -206,25 +199,33 @@ Timer:
 Index: 
     .word MusicData
 Voice1Waveform:
-    .byte 64
+    .byte 0
     .byte 0,0,0,0,0,0 
 Voice2Waveform:
-    .byte 32
-     
+    .byte 0
     .byte 0,0,0,0,0,0 
 Voice3Waveform:
-    .byte 32 
+    .byte 0 
 
 
 
 MusicData:
+    
+    .byte EventOffset.setWaveform,Voice1Offset
+    .byte Waveforms.Triangle 
+    .word 0 
+    .byte EventOffset.setWaveform,Voice2Offset
+    .byte Waveforms.Triangle 
+    .word 0 
+    .byte EventOffset.setWaveform,Voice3Offset
+    .byte Waveforms.Square
+    .word 0 
     .byte EventOffset.TurnOn,Voice1Offset
     .word 0 
     .byte EventOffset.TurnOn,Voice2Offset
     .word 0 
     .byte EventOffset.TurnOn,Voice3Offset
     .word 0    
-      
     .byte EventOffset.FreqChange,Voice1Offset
     .word noteValues.CSharp_1*8 
     .word 0 
@@ -260,6 +261,4 @@ MusicData:
     .word 0 
     .byte EventOffset.TurnOff,Voice3Offset
     .word 320   
-    
-    
 MusicDataEnd:

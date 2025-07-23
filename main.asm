@@ -15,23 +15,18 @@
 *=$801
     .byte $0c,$08,$e2,$07,$9e,$20,$32,$30,$36,$32,$00,$00,$00
 setup:
-    // setup raster irq
     setupRasterIRQ(customIRQ)
-    //load in tiles 
     lda #<Tiles+1
     sta zeropage2 
     lda #>Tiles+1 
     sta zeropage2+1
-    jsr loadTileMap
     clearBitmap()
     clearScreen(calculateColorPair(colors.black,colors.grey))
-    // setup memory Bank
+    jsr loadTileMap
     selectVideoBank(VideoBankNo)  
-    // activate correct videomode 
     toggleBitmap(true) 
     toggleBitmapBank(true) 
     toggleMultiColor(true)
-    // activate all sprites 
     initializeSprites()
    
 setupend:    
@@ -243,7 +238,7 @@ Sprite1:
 .byte $a,$aa,$80,$2a,$aa,$a0,$2a,$aa
 .byte $0,$0,$2,$aa,$0,$a,$56,$80
 .byte $d2,$0,$0,$0,$0,$0,$0,$0
-
+TileAddress:
 Tiles:
     .byte $41,$22,$14,$8,$14,$22,$41,$80
     .byte $ff,$22,$22,$22,$22,$22,$22,$22 
@@ -255,7 +250,23 @@ Tiles:
 Tilemap:
     .byte 0,0,0,0,0,0,0,0
     .byte 1,1,1,1,1,1,1,1
+        .byte 0,0,0,0,0,0,0,0
+    .byte 1,1,1,1,1,1,1,1
     .byte 3,2,1,4,4,0,0,4
+    .byte 0,0,0,0,0,0,0,0
+ .byte 0,0,0,0,0,0,0,0
+    .byte 1,1,1,1,1,1,1,1
+    .byte 3,2,1,4,4,0,0,4
+    .byte 0,0,0,0,0,0,0,0
+ .byte 0,0,0,0,0,0,0,0
+    .byte 1,1,1,1,1,1,1,1
+    .byte 3,2,1,4,4,0,0,4
+    .byte 0,0,0,0,0,0,0,0
+ .byte 0,0,0,0,0,0,0,0
+    .byte 1,1,1,1,1,1,1,1
+    .byte 3,2,1,4,4,0,0,4
+    .byte 0,0,0,0,0,0,0,0
+ .byte 3,2,1,4,4,0,0,4
     .byte 0,0,0,0,0,0,0,0
 TilemapEnd:
 

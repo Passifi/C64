@@ -136,7 +136,7 @@ XPos:
      sta zeropage+1 
      ldx #32
      ldy #0
-     tya
+     lda #33
 !loop:
      sta (zeropage),y
      dey 
@@ -445,6 +445,7 @@ loadTileMap:
      tay
      lda (TilemapZeropage),y
      clc
+.break
      adc #<Tiles 
      sta tileZeropage
      ldy #64
